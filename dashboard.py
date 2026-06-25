@@ -2,6 +2,7 @@ from tkinter import *
 from PIL import Image, ImageTk
 from tkmacosx import Button
 from course import CourseClass
+from student import studentClass
 
 class RMS:
     def __init__(self, root):
@@ -56,7 +57,8 @@ class RMS:
             font=("times new roman", 15, "bold"),
             bg="blue",
             fg="white",
-            cursor="hand2"
+            cursor="hand2",
+            command=self.add_student
         )
         btn_student.place(x=240, y=10, width=200, height=40)
 
@@ -153,10 +155,16 @@ class RMS:
         )
         footer.pack(side=BOTTOM, fill=X)
 
+
+    #course button function
     def add_course(self):
         self.new_win = Toplevel(self.root)
         self.new_obj = CourseClass(self.new_win)
 
+    #student button function
+    def add_student(self):
+        self.new_win = Toplevel(self.root)
+        self.new_obj = studentClass(self.new_win)
 
 if __name__ == "__main__":
     root = Tk()
