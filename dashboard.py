@@ -3,6 +3,7 @@ from PIL import Image, ImageTk
 from tkmacosx import Button
 from course import CourseClass
 from student import studentClass
+from result import resultClass
 
 class RMS:
     def __init__(self, root):
@@ -69,7 +70,8 @@ class RMS:
             font=("times new roman", 15, "bold"),
             bg="blue",
             fg="white",
-            cursor="hand2"
+            cursor="hand2",
+            command=self.add_reslut
         )
         btn_result.place(x=460, y=10, width=200, height=40)
 
@@ -165,6 +167,11 @@ class RMS:
     def add_student(self):
         self.new_win = Toplevel(self.root)
         self.new_obj = studentClass(self.new_win)
+
+    #result button function
+    def add_reslut(self):
+        self.new_win = Toplevel(self.root)
+        self.new_obj = resultClass(self.new_win)
 
 if __name__ == "__main__":
     root = Tk()

@@ -31,6 +31,18 @@ def create_db():
         )
     """)
 
+    cur.execute("""
+        CREATE TABLE IF NOT EXISTS result(
+            rid INTEGER PRIMARY KEY AUTOINCREMENT,
+            roll TEXT,
+            name TEXT,
+            course TEXT,
+            marks TEXT,
+            full_marks TEXT,
+            per TEXT
+        )
+    """)
+
     con.commit()
     con.close()
     print("Database and tables created successfully")
