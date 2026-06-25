@@ -1,5 +1,4 @@
 from tkinter import *
-from PIL import Image, ImageTk
 from tkmacosx import Button
 from tkinter import ttk, messagebox
 import sqlite3
@@ -15,7 +14,7 @@ class studentClass:
         # title bar..............................
         title = Label(
             self.root,
-            text="Manage Course Details",
+            text="Manage Student Details",
             font=("times new roman", 20, "bold"),
             bg="blue",
             fg="white"
@@ -34,6 +33,11 @@ class studentClass:
         self.var_state = StringVar()
         self.var_city = StringVar()
         self.var_pin = StringVar()
+        self.var_search = StringVar()
+
+        # course list...........................
+        self.course_list = []
+        self.fetch_course()
 
         #widget.............................
         #column 1...............................
@@ -73,7 +77,6 @@ class studentClass:
         )
         lbl_gender.place(x=10, y=180)
 
-
         #state......................................
         lbl_state = Label(
             self.root,
@@ -83,6 +86,7 @@ class studentClass:
             fg="black"
         )
         lbl_state.place(x=10, y=220)
+
         txt_state = Entry(
             self.root,
             textvariable=self.var_state,
@@ -92,16 +96,16 @@ class studentClass:
         )
         txt_state.place(x=150, y=220, width=150)
 
-
         #city......................................
         lbl_city = Label(
             self.root,
-            text="city",
+            text="City",
             font=("times new roman", 15, "bold"),
             bg="white",
             fg="black"
         )
         lbl_city.place(x=310, y=220)
+
         txt_city = Entry(
             self.root,
             textvariable=self.var_city,
@@ -111,16 +115,16 @@ class studentClass:
         )
         txt_city.place(x=380, y=220, width=100)
 
-
         #pin......................................
         lbl_pin = Label(
             self.root,
-            text="pin",
+            text="PIN",
             font=("times new roman", 15, "bold"),
             bg="white",
             fg="black"
         )
         lbl_pin.place(x=500, y=220)
+
         txt_pin = Entry(
             self.root,
             textvariable=self.var_pin,
@@ -130,7 +134,6 @@ class studentClass:
         )
         txt_pin.place(x=560, y=220, width=120)
 
-
         lbl_address = Label(
             self.root,
             text="Address",
@@ -139,7 +142,6 @@ class studentClass:
             fg="black"
         )
         lbl_address.place(x=10, y=260)
-
 
         #text entry fields | column 1...............................
         self.txt_roll = Entry(
@@ -175,13 +177,10 @@ class studentClass:
             values=("Select", "Male", "Female", "Other"),
             font=("times new roman", 15, "bold"),
             state="readonly",
-            justify=CENTER,
-            fg="black"
+            justify=CENTER
         )
         self.txt_gender.place(x=150, y=180, width=200)
-        self.txt_gender.current(0)  # Set default value to "Select"
-
-
+        self.txt_gender.current(0)
 
         #column 2...............................
         lbl_dob = Label(
@@ -220,10 +219,12 @@ class studentClass:
         )
         lbl_course.place(x=360, y=180)
 
-        #text entry fields | column 2...............................
+        #function_call 
         self.course_list = []
+        self.fetch_course()
 
-        #function call to update the list
+
+        #text entry fields | column 2...............................
         txt_dob = Entry(
             self.root,
             textvariable=self.var_dob,
@@ -257,16 +258,13 @@ class studentClass:
             values=self.course_list,
             font=("times new roman", 15, "bold"),
             state="readonly",
-            justify=CENTER,
-            fg="black"
+            justify=CENTER
         )
         self.txt_course.place(x=480, y=180, width=200)
-        self.txt_course.set("Empty")  # Set default value to "Select"
-
-
+        self.txt_course.set("Select")
 
         #text address field.......................
-        self.txt_address = Text( 
+        self.txt_address = Text(
             self.root,
             font=("times new roman", 15, "bold"),
             bg="lightblue",
@@ -319,9 +317,7 @@ class studentClass:
         )
         self.btn_clear.place(x=510, y=400, width=110, height=40)
 
-
         #search panel...........................
-        self.var_search = StringVar()
         lbl_search_roll = Label(
             self.root,
             text="Roll No.",
@@ -331,14 +327,14 @@ class studentClass:
         )
         lbl_search_roll.place(x=720, y=60)
 
-        txt_search_course_name = Entry(
+        txt_search_roll = Entry(
             self.root,
             textvariable=self.var_search,
             font=("times new roman", 15, "bold"),
             bg="lightblue",
             fg="black"
         )
-        txt_search_course_name.place(x=870, y=60, width=180)
+        txt_search_roll.place(x=870, y=60, width=180)
 
         btn_search = Button(
             self.root,
@@ -353,8 +349,8 @@ class studentClass:
 
         #content window...........................
         self.C_Frame = Frame(
-            self.root, 
-            bd=2, 
+            self.root,
+            bd=2,
             relief=RIDGE,
             bg="white"
         )
@@ -365,146 +361,225 @@ class studentClass:
 
         self.CourseTable = ttk.Treeview(
             self.C_Frame,
-            columns=("roll", "name", "email", "gender", "dob", "contact", "admission"),
+            columns=("roll", "name", "email", "gender", "dob", "contact", "admission", "course", "state", "city", "pin", "address"),
             yscrollcommand=scrolly.set,
             xscrollcommand=scrollx.set
         )
+
         scrollx.pack(side=BOTTOM, fill=X)
         scrolly.pack(side=RIGHT, fill=Y)
         scrollx.config(command=self.CourseTable.xview)
         scrolly.config(command=self.CourseTable.yview)
 
-        self.CourseTable.heading("cid", text="Course ID")
+        self.CourseTable.heading("roll", text="Roll No.")
         self.CourseTable.heading("name", text="Name")
-        self.CourseTable.heading("duration", text="Duration")
-        self.CourseTable.heading("charges", text="Charges")
-        self.CourseTable.heading("description", text="Description")
+        self.CourseTable.heading("email", text="Email")
+        self.CourseTable.heading("gender", text="Gender")
+        self.CourseTable.heading("dob", text="D.O.B")
+        self.CourseTable.heading("contact", text="Contact")
+        self.CourseTable.heading("admission", text="Admission")
+        self.CourseTable.heading("course", text="Course")
+        self.CourseTable.heading("state", text="State")
+        self.CourseTable.heading("city", text="City")
+        self.CourseTable.heading("pin", text="PIN")
+        self.CourseTable.heading("address", text="Address")
         self.CourseTable["show"] = "headings"
 
-        self.CourseTable.column("cid", width=100)
+        self.CourseTable.column("roll", width=70)
         self.CourseTable.column("name", width=100)
-        self.CourseTable.column("duration", width=100)
-        self.CourseTable.column("charges", width=100)
-        self.CourseTable.column("description", width=100)
+        self.CourseTable.column("email", width=120)
+        self.CourseTable.column("gender", width=80)
+        self.CourseTable.column("dob", width=100)
+        self.CourseTable.column("contact", width=100)
+        self.CourseTable.column("admission", width=100)
+        self.CourseTable.column("course", width=100)
+        self.CourseTable.column("state", width=100)
+        self.CourseTable.column("city", width=100)
+        self.CourseTable.column("pin", width=80)
+        self.CourseTable.column("address", width=150)
 
         self.CourseTable.pack(fill=BOTH, expand=1)
         self.CourseTable.bind("<ButtonRelease-1>", self.get_data)
+
         self.show()
 
+    #fetch course.........................................
+    def fetch_course(self):
+        con = sqlite3.connect(database="rms.db")
+        cur = con.cursor()
+        try:
+            cur.execute("select course_name from course")
+            rows = cur.fetchall()
+            if len(rows)>0:
+                for row in rows:
+                    self.course_list.append(row[0])
+        except Exception as ex:
+            messagebox.showerror("Error", f"Error due to: {str(ex)}", parent=self.root)
+        finally:
+            con.close()
 
- 
     #clear fields.........................................
     def clear(self):
         self.show()
         self.var_roll.set("")
-        self.var_duration.set("")
-        self.var_charges.set("")
+        self.var_name.set("")
+        self.var_email.set("")
+        self.var_gender.set("Select")
+        self.var_dob.set("")
+        self.var_contact.set("")
+        self.var_course.set("Select")
+        self.var_a_date.set("")
+        self.var_state.set("")
+        self.var_city.set("")
+        self.var_pin.set("")
         self.var_search.set("")
-        self.txt_description.delete("1.0", END)
-        self.txt_roll.config(state=NORMAL)  # Set the course name entry to normal state
+        self.txt_address.delete("1.0", END)
+        self.txt_roll.config(state=NORMAL)
 
-
-    #delete course........................................
+    #delete student........................................
     def delete(self):
         con = sqlite3.connect(database="rms.db")
         cur = con.cursor()
         try:
             if self.var_roll.get() == "":
-                messagebox.showerror("Error", "Course Name should be required", parent=self.root)
+                messagebox.showerror("Error", "Roll No. should be required", parent=self.root)
             else:
-                cur.execute("select * from course where course_name=?", (self.var_roll.get(),))
+                cur.execute("select * from student where roll=?", (self.var_roll.get(),))
                 row = cur.fetchone()
-                if row == None:
-                    messagebox.showerror("Error", "Please select a course to delete", parent=self.root)
+                if row is None:
+                    messagebox.showerror("Error", "Please select student from the list", parent=self.root)
                 else:
                     op = messagebox.askyesno("Confirm", "Do you really want to delete?", parent=self.root)
-                    if op == True:
-                        cur.execute("delete from course where course_name=?", (self.var_roll.get(),))
+                    if op is True:
+                        cur.execute("delete from student where roll=?", (self.var_roll.get(),))
                         con.commit()
-                        messagebox.showinfo("Delete", "Course deleted successfully", parent=self.root)
+                        messagebox.showinfo("Delete", "Student deleted successfully", parent=self.root)
                         self.clear()
         except Exception as ex:
             messagebox.showerror("Error", f"Error due to: {str(ex)}", parent=self.root)
+        finally:
+            con.close()
 
-
-    #course added........................................
+    #get data from table........................................
     def get_data(self, ev):
-        self.txt_roll.config(state="readonly")  # Set the course name entry to readonly
-        self.txt_roll
         r = self.CourseTable.focus()
         content = self.CourseTable.item(r)
         row = content["values"]
-        #print(row)
-        self.var_roll.set(row[1])
-        self.var_duration.set(row[2])
-        self.var_charges.set(row[3])
-        self.txt_description.delete("1.0", END)
-        self.txt_description.insert(END, row[4])
-    
-    
-    # add course to database..........................................
+
+        if row:
+            self.txt_roll.config(state="readonly")
+            self.var_roll.set(row[0])
+            self.var_name.set(row[1])
+            self.var_email.set(row[2])
+            self.var_gender.set(row[3])
+            self.var_dob.set(row[4])
+            self.var_contact.set(row[5])
+            self.var_a_date.set(row[6])
+            self.var_course.set(row[7])
+            self.var_state.set(row[8])
+            self.var_city.set(row[9])
+            self.var_pin.set(row[10])
+            self.txt_address.delete("1.0", END)
+            self.txt_address.insert(END, row[11])
+
+    # add student to database..........................................
     def add(self):
         con = sqlite3.connect(database="rms.db")
         cur = con.cursor()
         try:
             if self.var_roll.get() == "":
-                messagebox.showerror("Error", "Course Name should be required", parent=self.root)
+                messagebox.showerror("Error", "Roll Number should be required", parent=self.root)
             else:
-                cur.execute("select * from course where course_name=?", (self.var_roll.get(),))
+                cur.execute("select * from student where roll=?", (self.var_roll.get(),))
                 row = cur.fetchone()
-                if row != None:
-                    messagebox.showerror("Error", "Course Name already present, try different", parent=self.root)
+                if row is not None:
+                    messagebox.showerror("Error", "Roll No. already present, try different", parent=self.root)
                 else:
                     cur.execute(
-                        "insert into course (course_name, duration, charges, description) values(?, ?, ?, ?)",(
+                        "insert into student (roll, name, email, gender, dob, contact, admission, course, state, city, pin, address) values(?,?,?,?,?,?,?,?,?,?,?,?)",
+                        (
                             self.var_roll.get(),
-                            self.var_duration.get(),
-                            self.var_charges.get(),
-                            self.txt_description.get("1.0", END)
-                        )   
+                            self.var_name.get(),
+                            self.var_email.get(),
+                            self.var_gender.get(),
+                            self.var_dob.get(),
+                            self.var_contact.get(),
+                            self.var_a_date.get(),
+                            self.var_course.get(),
+                            self.var_state.get(),
+                            self.var_city.get(),
+                            self.var_pin.get(),
+                            self.txt_address.get("1.0", END).strip()
+                        )
                     )
                     con.commit()
-                    messagebox.showinfo("Success", "Course added successfully", parent=self.root)
+                    messagebox.showinfo("Success", "Student added successfully", parent=self.root)
                     self.show()
-            
+                    self.clear()
+
         except Exception as ex:
             messagebox.showerror("Error", f"Error due to: {str(ex)}", parent=self.root)
+        finally:
+            con.close()
 
-    #update course details..........................................
+    #update student details..........................................
     def update(self):
         con = sqlite3.connect(database="rms.db")
         cur = con.cursor()
         try:
             if self.var_roll.get() == "":
-                messagebox.showerror("Error", "Course Name should be required", parent=self.root)
+                messagebox.showerror("Error", "Roll No. should be required", parent=self.root)
             else:
-                cur.execute("select * from course where course_name=?", (self.var_roll.get(),))
+                cur.execute("select * from student where roll=?", (self.var_roll.get(),))
                 row = cur.fetchone()
-                if row == None:
-                    messagebox.showerror("Error", "Select course from list", parent=self.root)
+                if row is None:
+                    messagebox.showerror("Error", "Select student from list", parent=self.root)
                 else:
                     cur.execute(
-                        "update course set duration=?, charges=?, description=? where course_name=?",(
-                            self.var_duration.get(),
-                            self.var_charges.get(),
-                            self.txt_description.get("1.0", END),
+                        """update student set
+                        name=?,
+                        email=?,
+                        gender=?,
+                        dob=?,
+                        contact=?,
+                        admission=?,
+                        course=?,
+                        state=?,
+                        city=?,
+                        pin=?,
+                        address=?
+                        where roll=?""",
+                        (
+                            self.var_name.get(),
+                            self.var_email.get(),
+                            self.var_gender.get(),
+                            self.var_dob.get(),
+                            self.var_contact.get(),
+                            self.var_a_date.get(),
+                            self.var_course.get(),
+                            self.var_state.get(),
+                            self.var_city.get(),
+                            self.var_pin.get(),
+                            self.txt_address.get("1.0", END).strip(),
                             self.var_roll.get()
-                        )   
+                        )
                     )
                     con.commit()
-                    messagebox.showinfo("Success", "Course updated successfully", parent=self.root)
+                    messagebox.showinfo("Success", "Student updated successfully", parent=self.root)
                     self.show()
-            
+                    self.clear()
+
         except Exception as ex:
             messagebox.showerror("Error", f"Error due to: {str(ex)}", parent=self.root)
+        finally:
+            con.close()
 
-
-    # show all courses in table
+    # show all students in table
     def show(self):
         con = sqlite3.connect(database="rms.db")
         cur = con.cursor()
         try:
-            cur.execute("select * from course")
+            cur.execute("select * from student")
             rows = cur.fetchall()
             self.CourseTable.delete(*self.CourseTable.get_children())
             for row in rows:
@@ -512,24 +587,27 @@ class studentClass:
 
         except Exception as ex:
             messagebox.showerror("Error", f"Error due to: {str(ex)}", parent=self.root)
+        finally:
+            con.close()
 
-    
-
-
-    #search course.........................................
+    #search student.........................................
     def search(self):
         con = sqlite3.connect(database="rms.db")
         cur = con.cursor()
         try:
-            cur.execute(f"select * from course where course_name LIKE '%{self.var_search.get()}%'")
-            rows = cur.fetchall()
-            self.CourseTable.delete(*self.CourseTable.get_children())
-            for row in rows:
+            cur.execute("select * from student where roll =?", (self.var_search.get(),))
+            row = cur.fetchone()
+            if row!= None:
+                self.CourseTable.delete(*self.CourseTable.get_children())
                 self.CourseTable.insert("", END, values=row)
+
+            else:
+                messagebox.showerror("Error", "No record found", parent=self.root)
 
         except Exception as ex:
             messagebox.showerror("Error", f"Error due to: {str(ex)}", parent=self.root)
-
+        finally:
+            con.close()
 
 
 if __name__ == "__main__":
